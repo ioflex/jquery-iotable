@@ -201,7 +201,7 @@ function loadColumns(){
             base.converter  = column.converter;
         }
 
-        // *** Ensure that only the forst order will be applied in the case that multi-sorting is disabled ***
+        // *** Ensure that only the first order will be applied in the case that multi-sorting is disabled ***
         if(!base.options.multiSort && column.order !== null){
             sorted = true;
         }

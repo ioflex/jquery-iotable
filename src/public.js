@@ -30,9 +30,11 @@ var Grid = function(element, options){
     // *** The converter for the column that is marked as the identifier ***
     this.converter = null;
     
-    // *** explicitly override rowCount because deep copy ($.extend) causes strange behaviour ***
-    var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
-    this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
+    // *** explicitly override resultCount because deep copy ($.extend) causes strange behaviour ***
+    var resultCount = this.options.resultCount = this.element.data().resultCount || options.resultCount || this.options.resultCount;
+    this.resultCount = ($.isArray(resultCount)) ? resultCount[0] : resultCount;
+    var resultsPerPage = this.options.resultsPerPage = this.element.data().resultsPerPage || options.resultsPerPage || this.options.resultsPerPage;
+    this.resultsPerPage = resultsPerPage;
     this.rows = [];
     this.searchPhrase = "";
     this.selectedRows = [];
@@ -47,8 +49,6 @@ var Grid = function(element, options){
     this.header = null;
     this.footer = null;
     this.xqr = null;
-
-    // *** TODO: Implement Caching ***
 }
 
 /**
@@ -87,11 +87,16 @@ Grid.defaults = {
     columnSelection: true,
 
     /**
-     * Rows per page:
+     * Total records / rows to query for:
      * Can be int or Array
      * -1 represents "All"
      */
-    rowCount: [10, 25, 50, -1],
+    resultCount: [10, 25, 50, 100, -1],
+
+    /**
+     * Total rows displayed per page.
+     */
+    resultsPerPage: 10,
 
     /**
      * Enables row selection
@@ -120,13 +125,13 @@ Grid.defaults = {
      * Enables entire row click selection
      * 
      * @requires selection: true
-     * @property rowSelect
+     * @property rowselect
      * @type Boolean
      * @default false
      * @for defaults
      * @since 1.0.0
      */
-    rowSelect: false,
+    rowselect: false,
 
     /**
      * Defines whether the row selection is saved internally on filtering, paging, and sorting
@@ -144,13 +149,13 @@ Grid.defaults = {
      * Highlight new rows
      * Find the page of the first new row
      * 
-     * @property highlightRows
+     * @property highlightrows
      * @type Boolean
      * @default false
      * @for defaults
      * @since 1.0.0
      */
-    highlightRows: false,
+    highlightrows: false,
 
     /**
      * Column sorting
@@ -267,7 +272,7 @@ Grid.defaults = {
      * @for defaults
      * @deprecated Use instead `requestHandler`
      **/
-    post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
+    post: {}, // or use function () { return {}; } (reserved properties are "current", "resultCount", "sort" and "searchPhrase")
 
     /**
      * Transforms the JSON request object in what ever way is required by the server-side implementation.
@@ -504,16 +509,16 @@ Grid.prototype.append = function(rows){
     if(this.options.ajax){
         // TODO: Implement ajax handler to insert rows to api / server-side service
     }else{
-        var appendedRows = [];
+        var appendedrows = [];
         for(var i = 0; i < rows.length; i += 1){
             if(appendRow.call(this, rows[i])){
-                appendedRows.push(rows[i]);
+                appendedrows.push(rows[i]);
             }
         }
-        sortRows.call(this);
-        highlightAppendedRows.call(this, appendedRows);
+        sortrows.call(this);
+        highlightAppendedrows.call(this, appendedrows);
         loadData.call(this);
-        this.$element.trigger("appended" + namespace, [appendedRows]);
+        this.$element.trigger("appended" + namespace, [appendedrows]);
     }
     return this;
 };
@@ -766,7 +771,7 @@ Grid.prototype.sort = function(dictionary){
 
     this.sortDictionary = values;
     renderTableHeader.call(this);
-    sortRows.call(this);
+    sortrows.call(this);
     loadData.call(this);
     return this;
 };
@@ -806,7 +811,7 @@ Grid.prototype.getCurrentPage = function(){
  * @return {Array} Returns the current rows.
  * @since 1.0.0
  **/
-Grid.prototype.getCurrentRows = function()
+Grid.prototype.getcurrentRows = function()
 {
     return $.merge([], this.currentRows);
 };
@@ -816,13 +821,13 @@ Grid.prototype.getCurrentRows = function()
  * This method returns only for the first grid instance a value.
  * Therefore be sure that only one grid instance is caught by your selector.
  *
- * @method getRowCount
+ * @method getresultCount
  * @return {Number} Returns the row count per page.
  * @since 1.0.0
  **/
-Grid.prototype.getRowCount = function()
+Grid.prototype.getresultCount = function()
 {
-    return this.rowCount;
+    return this.resultCount;
 };
 
 /**
@@ -844,11 +849,11 @@ Grid.prototype.getSearchPhrase = function()
  * This method returns only for the first grid instance a value.
  * Therefore be sure that only one grid instance is caught by your selector.
  *
- * @method getSelectedRows
+ * @method getselectedRows
  * @return {Array} Returns all selected rows.
  * @since 1.0.0
  **/
-Grid.prototype.getSelectedRows = function()
+Grid.prototype.getselectedRows = function()
 {
     return $.merge([], this.selectedRows);
 };
@@ -886,11 +891,11 @@ Grid.prototype.getTotalPageCount = function()
  * This method returns only for the first grid instance a value.
  * Therefore be sure that only one grid instance is caught by your selector.
  *
- * @method getTotalRowCount
+ * @method getTotalresultCount
  * @return {Number} Returns the total row count.
  * @since 1.0.0
  **/
-Grid.prototype.getTotalRowCount = function()
+Grid.prototype.getTotalresultCount = function()
 {
     return this.total;
 };
