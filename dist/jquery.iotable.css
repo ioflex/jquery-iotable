@@ -1,0 +1,206 @@
+/*! 
+ * jQuery IOTable v1.0.0 - 05/18/2019
+ * Copyright (c) 2014-2019 Dalton Brady (https://www.ioflex.net/projects/)
+ * Licensed under MIT http://www.opensource.org/licenses/MIT
+ */
+.io-table-header,
+.io-table-footer {
+  margin: 15px 0;
+}
+.io-table-header a,
+.io-table-footer a {
+  outline: 0;
+}
+.io-table-header .search,
+.io-table-footer .search {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  vertical-align: middle;
+  width: 180px;
+}
+.io-table-header .search .glyphicon,
+.io-table-footer .search .glyphicon {
+  top: 0;
+}
+.io-table-header .search .fa,
+.io-table-footer .search .fa {
+  display: table-cell;
+}
+.io-table-header .search.search-field::-ms-clear,
+.io-table-footer .search.search-field::-ms-clear,
+.io-table-header .search .search-field::-ms-clear,
+.io-table-footer .search .search-field::-ms-clear {
+  display: none;
+}
+.io-table-header .search span,
+.io-table-footer .search span {
+  border-collapse: separate;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: table-cell;
+  border-right: 0;
+  background-color: #eee;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  padding: 6px 12px;
+  text-align: center;
+  font-size: 18px;
+}
+.io-table-header .pagination,
+.io-table-footer .pagination {
+  margin: 0 !important;
+}
+.io-table-header .actionBar,
+.io-table-footer .infoBar {
+  text-align: right;
+}
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu {
+  text-align: left;
+}
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item {
+  cursor: pointer;
+  display: block;
+  margin: 0;
+  padding: 3px 20px;
+  white-space: nowrap;
+}
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox {
+  margin: 0 2px 4px 0;
+  vertical-align: middle;
+}
+.io-table-header .actionBar .btn-group > .btn-group .dropdown-item.disabled,
+.io-table-footer .infoBar .btn-group > .btn-group .dropdown-item.disabled {
+  cursor: not-allowed;
+}
+.io-table {
+  table-layout: fixed;
+}
+.io-table a {
+  outline: 0;
+}
+.io-table th > .io-table-col-header-anchor {
+  color: #333;
+  cursor: not-allowed;
+  display: block;
+  position: relative;
+  text-decoration: none;
+}
+.io-table th > .io-table-col-header-anchor.sortable {
+  cursor: pointer;
+}
+.io-table th > .io-table-col-header-anchor > .text {
+  display: block;
+  margin: 0 16px 0 0;
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  -webkit-overflow-scrolling: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.io-table th > .io-table-col-header-anchor > .icon {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 2px;
+}
+.io-table th:hover,
+.io-table th:active {
+  background: #fafafa;
+}
+.io-table td {
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  -webkit-overflow-scrolling: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.io-table td.loading,
+.io-table td.no-results {
+  background: #fff;
+  text-align: center;
+}
+.io-table th.select-cell,
+.io-table td.select-cell {
+  text-align: center;
+  width: 30px;
+}
+.io-table th.select-cell .select-box,
+.io-table td.select-cell .select-box {
+  margin: 0;
+  outline: 0;
+}
+.table-responsive .io-table {
+  table-layout: inherit !important;
+}
+.table-responsive .io-table th > .io-table-col-header-anchor > .text {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
+}
+.table-responsive .io-table td {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
+}
+ul.pagination > li > a {
+  position: relative;
+  float: left;
+  padding: 6px 12px;
+  line-height: 1.42857143;
+  text-decoration: none;
+  border: 1px solid #a3e844;
+}
+ul.pagination > li > a:hover,
+ul.pagination > li > a:focus {
+  color: #2a6496;
+  background-color: #a6da60;
+  border-color: #ddd;
+}
+ul.pagination > li > span:hover,
+ul.pagination > li > span:focus {
+  color: #2a6496;
+  background-color: #a6da60;
+  border-color: #ddd;
+}
+ul.pagination > li:first-child a,
+ul.pagination > li:first-child span {
+  margin-left: 0;
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
+}
+ul.pagination > li:last-child a,
+ul.pagination > li:last-child span {
+  border-bottom-right-radius: 4px;
+  border-top-right-radius: 4px;
+}
+ul.pagination > .active a,
+ul.pagination > .active a:hover,
+ul.pagination > .active a:focus,
+ul.pagination > .active span,
+ul.pagination > .active span:hover,
+ul.pagination > .active span:focus {
+  z-index: 2;
+  color: #fff;
+  background-color: #709f2f;
+  border-color: #a3e844;
+  cursor: default;
+}

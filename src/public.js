@@ -31,9 +31,9 @@ var Grid = function(element, options){
     this.converter = null;
     
     // *** explicitly override resultCount because deep copy ($.extend) causes strange behaviour ***
-    var resultCount = this.options.resultCount = this.element.data().resultCount || options.resultCount || this.options.resultCount;
+    var resultCount = this.options.resultCount = this.$element.data().resultCount || options.resultCount || this.options.resultCount;
     this.resultCount = ($.isArray(resultCount)) ? resultCount[0] : resultCount;
-    var resultsPerPage = this.options.resultsPerPage = this.element.data().resultsPerPage || options.resultsPerPage || this.options.resultsPerPage;
+    var resultsPerPage = this.options.resultsPerPage = this.$element.data().resultsPerPage || options.resultsPerPage || this.options.resultsPerPage;
     this.resultsPerPage = resultsPerPage;
     this.rows = [];
     this.searchPhrase = "";
@@ -83,6 +83,12 @@ Grid.defaults = {
 
     /**
      * Column selection enabled
+     * 
+     * @property columnSelection
+     * @type Boolean
+     * @default false
+     * @for defaults
+     * @since 1.0.0
      */
     columnSelection: true,
 
@@ -90,11 +96,22 @@ Grid.defaults = {
      * Total records / rows to query for:
      * Can be int or Array
      * -1 represents "All"
+     * 
+     * @property resultCount
+     * @type Numeric Array
+     * @default [10, 25, 50, 100, -1]
+     * @for defaults
+     * @since 1.0.0
      */
     resultCount: [10, 25, 50, 100, -1],
 
     /**
      * Total rows displayed per page.
+     * @property resultsPerPage
+     * @type Numeric
+     * @default 10
+     * @for defaults
+     * @since 1.0.0
      */
     resultsPerPage: 10,
 
@@ -131,7 +148,7 @@ Grid.defaults = {
      * @for defaults
      * @since 1.0.0
      */
-    rowselect: false,
+    rowSelect: false,
 
     /**
      * Defines whether the row selection is saved internally on filtering, paging, and sorting
@@ -149,13 +166,13 @@ Grid.defaults = {
      * Highlight new rows
      * Find the page of the first new row
      * 
-     * @property highlightrows
+     * @property highlightRows
      * @type Boolean
      * @default false
      * @for defaults
      * @since 1.0.0
      */
-    highlightrows: false,
+    highlightRows: false,
 
     /**
      * Column sorting
@@ -356,35 +373,15 @@ Grid.defaults = {
         left: "text-left",
         pagination: "pagination",
         paginationButton: "button",
-
-    /**
-     * CSS class to select the parent div which activates responsive mode.
-     *
-     * @property responsiveTable
-     * @type String
-     * @default "table-responsive"
-     * @for css
-     * @since 1.0.0
-     **/
-    responsiveTable: "table-responsive",
-    right: "text-right",
-    search: "search form-group",
-    searchField: "search-field form-control",
-    selectBox: "select-box",
-    selectCell: "select-cell",
-
-    /**
-     * CSS class to highlight selected rows.
-     *
-     * @property selected
-     * @type String
-     * @default "active"
-     * @for css
-     * @since 1.0.0
-     **/
-    selected: "active",
-    sortable: "sortable",
-    table: "io-table table"
+        responsiveTable: "table-responsive",
+        right: "text-right",
+        search: "search form-group",
+        searchField: "search-field form-control",
+        selectBox: "select-box",
+        selectCell: "select-cell",
+        selected: "active",
+        sortable: "sortable",
+        table: "io-table table"
     },
 
     /**
@@ -465,36 +462,36 @@ Grid.defaults = {
         3: "danger"
     },
 
-/**
- * Contains all templates.
- *
- * @property templates
- * @type Object
- * @for defaults
- * @since 1.0.0
- **/
-templates: {
-    actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
-    actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
-    actionDropDownItem: "<li><a data-action=\"{{ctx.action}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
-    actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
-    actions: "<div class=\"{{css.actions}}\"></div>",
-    body: "<tbody></tbody>",
-    cell: "<td class=\"{{ctx.css}}\" style=\"{{ctx.style}}\">{{ctx.content}}</td>",
-    footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
-    header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
-    headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
-    icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
-    infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
-    loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
-    noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
-    pagination: "<ul class=\"{{css.pagination}}\"></ul>",
-    paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
-    rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-    row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
-    search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
-    select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
-}
+    /**
+     * Contains all templates.
+     *
+     * @property templates
+     * @type Object
+     * @for defaults
+     * @since 1.0.0
+     **/
+    templates: {
+        actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
+        actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
+        actionDropDownItem: "<li><a data-action=\"{{ctx.action}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
+        actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
+        actions: "<div class=\"{{css.actions}}\"></div>",
+        body: "<tbody></tbody>",
+        cell: "<td class=\"{{ctx.css}}\" style=\"{{ctx.style}}\">{{ctx.content}}</td>",
+        footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
+        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
+        headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
+        icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
+        infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
+        loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
+        noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
+        pagination: "<ul class=\"{{css.pagination}}\"></ul>",
+        paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
+        rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
+        row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
+        search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+        select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
+    }
 };
 
 /**
@@ -515,8 +512,8 @@ Grid.prototype.append = function(rows){
                 appendedrows.push(rows[i]);
             }
         }
-        sortrows.call(this);
-        highlightAppendedrows.call(this, appendedrows);
+        sortRows.call(this);
+        highlightAppendedRows.call(this, appendedrows);
         loadData.call(this);
         this.$element.trigger("appended" + namespace, [appendedrows]);
     }
@@ -771,7 +768,7 @@ Grid.prototype.sort = function(dictionary){
 
     this.sortDictionary = values;
     renderTableHeader.call(this);
-    sortrows.call(this);
+    sortRows.call(this);
     loadData.call(this);
     return this;
 };
@@ -811,7 +808,7 @@ Grid.prototype.getCurrentPage = function(){
  * @return {Array} Returns the current rows.
  * @since 1.0.0
  **/
-Grid.prototype.getcurrentRows = function()
+Grid.prototype.getCurrentRows = function()
 {
     return $.merge([], this.currentRows);
 };
@@ -825,7 +822,7 @@ Grid.prototype.getcurrentRows = function()
  * @return {Number} Returns the row count per page.
  * @since 1.0.0
  **/
-Grid.prototype.getresultCount = function()
+Grid.prototype.getResultCount = function()
 {
     return this.resultCount;
 };
@@ -853,7 +850,7 @@ Grid.prototype.getSearchPhrase = function()
  * @return {Array} Returns all selected rows.
  * @since 1.0.0
  **/
-Grid.prototype.getselectedRows = function()
+Grid.prototype.getSelectedRows = function()
 {
     return $.merge([], this.selectedRows);
 };
@@ -895,7 +892,7 @@ Grid.prototype.getTotalPageCount = function()
  * @return {Number} Returns the total row count.
  * @since 1.0.0
  **/
-Grid.prototype.getTotalresultCount = function()
+Grid.prototype.getTotalResultCount = function()
 {
     return this.total;
 };

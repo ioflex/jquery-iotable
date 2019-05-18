@@ -13,9 +13,7 @@
       * @param {String} value 
       */
      _bgAria: function(name, value){
-         return (value) 
-                    ? this.attr("aria-" + name, value) 
-                    : this.attr("aria-", name);
+         return (value) ? this.attr("aria-" + name, value) : this.attr("aria-", name);
      },
 
      /**
@@ -23,9 +21,7 @@
       * @param {Boolean} busy 
       */
      _bgBusyAria: function(busy){
-         return (busy === null || busy) 
-                    ? this._bgAria("busy", "true") 
-                    : this._bgAria("busy", "false");
+         return (busy === null || busy) ? this._bgAria("busy", "true") : this._bgAria("busy", "false");
      },
 
      /**
@@ -41,9 +37,7 @@
       * @param {Boolean} enable 
       */
      _bgEnableAria: function(enable){
-         return (enable === null || enable) 
-                    ? this.removeClass("disabled")._bgAria("disabled", "false") 
-                    : this.addClass("disabled")._bgAria("disabled", "true");
+         return (enable === null || enable) ? this.removeClass("disabled")._bgAria("disabled", "false") : this.addClass("disabled")._bgAria("disabled", "true");
      },
 
      /**
@@ -51,9 +45,7 @@
       * @param {Boolean} enable 
       */
      _bgEnableField: function(enable){
-         return (enable === null || enable) 
-                    ? this.removeAttr("disabled") 
-                    : this.attr("disabled", "disable");
+         return (enable === null || enable) ? this.removeAttr("disabled") : this.attr("disabled", "disable");
      },
 
      /**
@@ -61,9 +53,7 @@
       * @param {Boolean} show 
       */
      _bgShowAria: function(show){
-         return (show === null || show) 
-                    ? this.show()._bgAria("hidden", "false") 
-                    : this.hide()._bgAria("hidden", "true");
+         return (show === null || show) ? this.show()._bgAria("hidden", "false") : this.hide()._bgAria("hidden", "true");
      },
 
      /**
@@ -71,9 +61,7 @@
       * @param {Boolean} select 
       */
      _bgSelectAria: function(select){
-         return (select === null || select) 
-                    ? this.addClass("active")._bgAria("selected", "true") 
-                    : this.removeClass("active")._bgAria("selected", "false");
+         return (select === null || select) ? this.addClass("active")._bgAria("selected", "true") : this.removeClass("active")._bgAria("selected", "false");
      },
 
      /**
@@ -136,11 +124,7 @@
      Array.prototype.page = function(page, size){
          var skip = (page - 1) * size,
              end = skip + size;
-         return (this.length > skip) 
-                    ? (this.length > end) 
-                        ? this.slice(skip, end) 
-                        : this.slice(skip) 
-                    : [];
+         return (this.length > skip) ? (this.length > end) ? this.slice(skip, end) : this.slice(skip) : [];
      };
  }
 

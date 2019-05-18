@@ -209,7 +209,7 @@ module.exports = function(grunt){
             }
         },
         qunit: {
-            files: ['test/index.html']
+            files: ['../test/index.html']
         },
         exec: {
             publish: {
@@ -249,4 +249,4 @@ module.exports = function(grunt){
     grunt.registerTask('build', ['clean:build', 'version', 'less', 'concat', 'csslint', 'jshint', 'test']);
     grunt.registerTask('release', ['build', 'api', 'cssmin', 'uglify', 'compress', 'nugetpack']);
     grunt.registerTask('publish', ['nugetpush', 'exec:publish']);
-}
+};

@@ -26,7 +26,7 @@ function appendRow(row){
         return base.identifier && item[base.identifier] === row[base.identifier];
     }
 
-    if(!this.rows.contains(exists)){
+    if(!exists(this.rows)){
         this.rows.push(row);
         return true;
     }
@@ -66,7 +66,7 @@ function getParams(context){
 function getRequest(){
     var request = {
         current: this.current,
-        rowCount: this.rowCount,
+        resultCount: this.resultCount,
         sort: this.sortDictionary,
         searchPhrase: this.searchPhrase
     },
@@ -96,40 +96,6 @@ function getCssSelector(css){
 function getUrl(){
     var url = this.options.url;
     return ($.isFunction(url)) ? url() : url;
-}
-
-/**
- * Initialize the iotable.
- * 
- * @method init
- * @since 1.0.0
- */
-function init(){
-    this.$element.trigger("initialize" + namespace);
-
-    /**
-     * Loads columns from HTML `thead` tag.
-     */
-    loadColumns.call(this);
-
-    this.selection = this.options.selection && this.identifier !== null;
-
-    /**
-     * Loads rows from HTML `tbody` tag if ajax is false.
-     */
-    loadRows.call(this);
-
-    prepareTable.call(this);
-
-    renderTableHeader.call(this);
-
-    renderSearchField.call(this);
-
-    renderActions.call(this);
-
-    loadData.call(this);
-
-    this.$element.trigger("initialized" + namespace);
 }
 
 /**
@@ -209,130 +175,7 @@ function loadColumns(){
     /*jshint -W018*/
 }
 
-/**
- * Load data into table
- * 
- * @method loadData
- * @since 1.0.0
- */
-function loadData(){
-    var base = this;
 
-    this.$element._bgBusyAria(true).trigger("load" + namespace);
-    showLoading.call(this);
-
-    function containsPhrase(row){
-        var column,
-            searchPattern = new RegExp(base.searchPhrase, (base.options.caseSensitive) ? "g" : "gi");
-        
-        for(var i = 0; i < base.columns.length; i += 1){
-            column = base.columns[i];
-            if(column.searchable 
-                && column.visible 
-                && column.converter.to(row[column.id]).search(searchPattern) > -1){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function update(rows, total){
-        base.currentRows = rows;
-        setTotals.call(base, total);
-
-        if(!base.options.keepSelection){
-            base.selectedRows = [];
-        }
-
-        renderRows.call(base, rows);
-        renderInfos.call(base);
-        renderPagination.call(base);
-
-        base.$element._bgBusyAria(false).trigger("loaded" + namespace);
-    }
-
-    if(this.options.ajax){
-        var request = getRequest.call(this),
-            url = getUrl.call(this);
-
-        if(url === null || typeof url !== "string" || url.length === 0){
-            throw new Error("Url setting must be a non-empty string or a function that returns one.");
-        }
-
-        // *** Abort the previous AJAX request if not already finished or if failed.
-        if(this.xqr){
-            this.xqr.abort();
-        }
-
-        var settings = {
-            url: url,
-            data: request,
-            success: function(response){
-                base.xqr = null;
-
-                if(typeof (response) === "string"){
-                    response = $.parseJSON(response);
-                }
-
-                response = base.options.responseHandler(response);
-
-                base.current = response.current;
-                update(response.rows, response.totals);
-            },
-            error: function(jqXHR, textStatus, errorThrown){
-                base.xqr = null;
-
-                if(textStatus !== "abort"){
-                    renderNoResultsRow.call(base) // override loading mask
-                    base.element._bgBusyAria(false).trigger("loaded" + namespace);
-                }
-            }
-        };
-
-        settings = $.extend(this.options.ajaxSettings, settings);
-
-        this.xqr = $.ajax(settings);
-    }else{
-        var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
-            total = rows.length;
-        
-        if(this.rowCount !== -1){
-            rows = rows.page(this.current, this.rowCount);
-        }
-
-        // TODO: Improve this comment ?
-        // *** setTimeout decouples the initialization so that adding event handlers happens before initialization ***
-        window.setTimeout(function() {update(rows, total);}, 10);
-    }
-}
-
-/**
- * Load rows when not using AJAX.
- * 
- * @method loadRows
- * @since 1.0.0
- */
-function loadRows(){
-    if(!this.options.ajax){
-        var base = this,
-            rows = this.$element.find("tbody > tr");
-
-        rows.each(function(){
-            var $this = $(this),
-                cells = $this.children("td"),
-                row = {};
-
-            $.each(base.columns, function(i, column){
-                row[column.id] = column.converter.from(cells.eq(i).text());
-            });
-
-            appendRow.call(base, row);
-        });
-
-        setTotals.call(this, this.rows.length);
-        sortRows.call(this);
-    }
-}
 
 /**
  * Sets the total rows and total pages.
@@ -343,7 +186,7 @@ function loadRows(){
  */
 function setTotals(total){
     this.total = total;
-    this.totalPages = (this.rowCount === -1) ? 1 : Math.ceil(this.total / this.rowCount);
+    this.totalPages = (this.resultCount === -1) ? 1 : Math.ceil(this.total / this.resultCount);
 }
 
 /**
@@ -354,9 +197,7 @@ function setTotals(total){
  */
 function prepareTable(){
     var template = this.options.templates,
-        wrapper = (this.$element.parent().hasClass(this.options.css.responsiveTable)) 
-                    ? this.$element.parent() 
-                    : this.$element;
+        wrapper = (this.$element.parent().hasClass(this.options.css.responsiveTable)) ? this.$element.parent() : this.$element;
 
     this.$element.addClass(this.options.css.table);
 
@@ -401,7 +242,7 @@ function renderActions(){
                         text: this.options.labels.refresh
                     }))).on("click" + namespace, function(e){
                         // TODO: Prevent multiple fast clicks (fast click detection)
-                        e.stopPropogation();
+                        e.stopPropagation();
                         base.current = 1;
                         loadData.call(base);
                     });
@@ -444,7 +285,7 @@ function renderColumnSelection(actions){
                     label: column.text,
                     checked: column.visible
                 }))).on("click" + namespace, selector, function(e){
-                    e.stopPropogation();
+                    e.stopPropagation();
 
                     var $this = $(this),
                         checkbox = $this.find(checkboxSelector);
@@ -480,12 +321,10 @@ function renderInfos(){
             infoItems = findFooterAndHeaderItems.call(this, selector);
 
         if(infoItems.length > 0){
-            var end = (this.current * this.rowCount),
+            var end = (this.current * this.resultCount),
                 infos = $(this.options.templates.infos.resolve(getParams.call(this, {
-                    end: (this.total === 0 || end === -1 || end > this.total)
-                             ? this.total 
-                             : end,
-                    start: (this.total === 0) ? 0 : (end - this.rowCount + 1),
+                    end: (this.total === 0 || end === -1 || end > this.total)? this.total : end,
+                    start: (this.total === 0) ? 0 : (end - this.resultCount + 1),
                     total: this.total
                 })));
 
@@ -521,18 +360,16 @@ function renderNoResultsRow(){
 function renderPagination(){
     if(this.options.navigation !== 0){
         var selector = getCssSelector(this.options.css.infos),
-            paginationItems = findFooterAndHeaderItems.call(this, selector)._bgShowAria(this.rowCount !== -1);
+            paginationItems = findFooterAndHeaderItems.call(this, selector)._bgShowAria(this.resultCount !== -1);
 
-        if(this.rowCount !== -1 && paginationItems.length > 0){
+        if(this.resultCount !== -1 && paginationItems.length > 0){
             var template    = this.options.templates,
                 current     = this.current,
                 totalPages  = this.totalPages,
                 pagination  = $(template.pagination.resolve(getParams.call(this))),
-                offsetRight = totalPages - current;
+                offsetRight = totalPages - current,
                 offsetLeft  = (this.options.padding - current) * -1,
-                startWith   = ((offsetRight >= this.options.padding) 
-                                ? Math.max(offsetLeft, 1) 
-                                : Math.max((offsetLeft - this.options.padding + offsetRight), 1)),
+                startWith   = ((offsetRight >= this.options.padding) ? Math.max(offsetLeft, 1) : Math.max((offsetLeft - this.options.padding + offsetRight), 1)),
                 maxCount    = this.options.padding * 2 + 1,
                 count       = (totalPages >= maxCount) ? maxCount : totalPages;
 
@@ -582,7 +419,7 @@ function renderPaginationItem(list, page, text, markerCss){
         css = this.options.css,
         values = getParams.call(this, {css: markerCss, text: text, page: page}),
         item = $(template.paginationItem.resolve(values)).on("click" + namespace, getCssSelector(css.paginationButton), function(e){
-            e.stopPropogation();
+            e.stopPropagation();
             e.preventDefault();
 
             var $this = $(this),
@@ -614,42 +451,42 @@ function renderPaginationItem(list, page, text, markerCss){
  */
 function renderRowCountSelection(actions){
     var base = this,
-        rowCountList = this.options.rowCount;
+        resultCountList = this.options.resultCount;
 
     function getText(value){
         return (value === -1) ? base.options.labels.all : value;
     }
 
-    if($.isArray(rowCountList)){
+    if($.isArray(resultCountList)){
 
         var css = this.options.css,
             template = this.options.templates,
             dropDown = $(template.actionDropDown.resolve(getParams.call(this, 
                                                                         { 
-                                                                            content: getText(this.rowCount) 
+                                                                            content: getText(this.resultCount) 
                                                                         }))),
             menuSelector = getCssSelector(css.dropDownMenu),
             menuTextSelector = getCssSelector(css.dropDownMenuText),
             menuItemsSelector = getCssSelector(css.dropDownMenuItems),
             menuItemSelector = getCssSelector(css.dropDownItemButton);
 
-        $.each(rowCountList, function(index, value){
+        $.each(resultCountList, function(index, value){
             var item = $(template.actionDropDownItem.resolve(getParams.call(base, 
                                                                             { 
                                                                                 text: getText(value),
                                                                                 action: value 
                                                                             })))
-                                                    ._bgSelectAria(value === base.rowCount)
+                                                    ._bgSelectAria(value === base.resultCount)
                                                     .on("click" + namespace, menuItemSelector,
             function(e){
                 e.preventDefault();
 
                 var $this = $(this),
                     newRowCount = $this.data("action");
-                if(newRowCount !== base.rowCount){
+                if(newRowCount !== base.resultCount){
                     // TODO: Sophisticated solution needed for calculating which page is selected.
-                    base.current = 1; // base.rowCount === -1 (All)
-                    base.rowCount = newRowCount;
+                    base.current = 1; // base.resultCount === -1 (All)
+                    base.resultCount = newRowCount;
                     $this.parents(menuItemSelector).children().each(function(){
                         var $item = $(this),
                             currentRowCount = $item.find(menuItemSelector).data("action");
@@ -681,9 +518,7 @@ function renderRows(rows){
 
         $.each(rows, function(index, row){
             var cells = "",
-                rowAttr = " data-row-id=\"" + ((base.identifier == null) 
-                                                ? index 
-                                                : row[base.identifier]) + "\"",
+                rowAttr = " data-row-id=\"" + ((base.identifier == null) ? index : row[base.identifier]) + "\"",
                 rowCss = "";
 
             if(base.selection){
@@ -712,23 +547,14 @@ function renderRows(rows){
 
             $.each(base.columns, function(j, column){
                 if(column.visible){
-                    var value = ($.isFunction(column.formatter)) 
-                                    ? column.formatter.call(base, column, row) 
-                                    : column.converter.to(row[column.id]),
+                    var value = ($.isFunction(column.formatter)) ? column.formatter.call(base, column, row) : column.converter.to(row[column.id]),
                                 cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
 
                     cells += template.cell.resolve(getParams.call(base, 
                                                                 { 
-                                                                    content: (value === null || value === "") 
-                                                                                ? "&nbsp;" 
-                                                                                : value,
-                                                                    css: ((column.align === "right") 
-                                                                                ? css.right 
-                                                                                : (column.align === "center") 
-                                                                                    ? css.center : css.left) + cssClass,
-                                                                    style: (column.width === null) 
-                                                                                ? "" 
-                                                                                : "width:" + column.width + ";" 
+                                                                    content: (value === null || value === "") ? "&nbsp;" : value,
+                                                                    css: ((column.align === "right") ? css.right : (column.align === "center") ? css.center : css.left) + cssClass,
+                                                                    style: (column.width === null) ? "" : "width:" + column.width + ";" 
                                                                 }));
                 }
             });
@@ -774,7 +600,7 @@ function registerRowEvents(tbody){
         tbody.off("click" + namespace, selectBoxSelector)
              .on("click" + namespace, selectBoxSelector, 
                     function(e){
-                        e.stopPropogation();
+                        e.stopPropagation();
 
                         var $this = $(this),
                             id = base.converter.from($this.val());
@@ -790,15 +616,11 @@ function registerRowEvents(tbody){
     tbody.off("click" + namespace, "> tr")
          .on("click" + namespace, "> tr", 
                 function(e){
-                    e.stopPropogation();
+                    e.stopPropagation();
 
                     var $this = $(this),
-                        id = (base.identifier === null) 
-                                ? $this.data("row-id") 
-                                : base.converter.from($this.data("row-id") + ""),
-                        row = (base.identifier === null) 
-                                ? base.currentRows[id] 
-                                : base.currentRows.first(function(item){ return item[base.identifier] === id; });
+                        id = (base.identifier === null) ? $this.data("row-id") : base.converter.from($this.data("row-id") + ""),
+                        row = (base.identifier === null) ? base.currentRows[id] : base.currentRows.first(function(item){ return item[base.identifier] === id; });
 
                     if(base.selection && base.options.rowSelect){
                         if($this.hasClass(base.options.css.selected)){
@@ -831,22 +653,21 @@ function renderSearchField(){
                 currentValue = "",
                 searchFieldSelector = getCssSelector(css.searchField),
                 $search = $(template.search.resolve(getParams.call(this))),
-                searchField = ($search.is(searchFieldSelector)) 
-                                ? $search 
-                                : $search.find(searchFieldSelector);
+                searchField = ($search.is(searchFieldSelector)) ? $search : $search.find(searchFieldSelector);
 
             searchField.on("keyup" + namespace, 
                             function(e){
-                                e.stopPropogation();
+                                e.stopPropagation();
 
                                 var newValue = $(this).val();
                                 if(currentValue !== newValue || (e.which === 13 && newValue !== "")){
                                     currentValue = newValue;
                                     if(e.which === 13 || newValue.length === 0 || newValue.length >= base.options.searchSettings.characters){
                                         window.clearTimeout(timer);
-                                        timer = window.setTimeout(function(){
-                                            executeSearch.call(base, newValue);
-                                        }, base.options.searchSettings.delay);
+                                        timer = window.setTimeout(
+                                            function(){
+                                                executeSearch.call(base, newValue);
+                                            }, base.options.searchSettings.delay);
                                     }
                                 }
                             });
@@ -886,51 +707,19 @@ function renderTableHeader(){
         sorting = this.options.sorting;
 
     if(this.selection){
-        var selectBox = (this.options.multiSelect) 
-                            ? template.select.resolve(getParams.call(base, 
-                                                                        { 
-                                                                            type: "checkbox",
-                                                                             value: "all" 
-                                                                        })) 
-                            : "";
-        html += template.rawHeaderCell.resolve(getParams.call(base, 
-                                                                { 
-                                                                    content: selectBox, 
-                                                                    css: css.selectCell 
-                                                                }));
+        var selectBox = (this.options.multiSelect) ? template.select.resolve(getParams.call(base, { type: "checkbox", value: "all" })) : "";
+        html += template.rawHeaderCell.resolve(getParams.call(base, { content: selectBox, css: css.selectCell }));
     }
 
     $.each(this.columns, function(index, column){
         if(column.visible){
             var sortOrder = base.sortDictionary[column.id],
-                iconCss = ((sorting && sortOrder && sortOrder === "asc") 
-                            ? css.iconUp 
-                            : (sorting && sortOrder && sortOrder === "desc") 
-                                ? css.iconDown 
-                                : ""),
-                icon = template.icon.resolve(getParams.call(base, 
-                                                            {
-                                                                 iconCss: iconCss 
-                                                            })),
+                iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp : (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
+                icon = template.icon.resolve(getParams.call(base, { iconCss: iconCss })),
                 align = column.headerAlign,
-                cssClass = (column.headerCssClass.length > 0) 
-                                ? " " + column.headerCssClass 
-                                : "";
+                cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
 
-            html += template.headerCell.resolve(getParams.call(base, 
-                                                                {
-                                                                    column: column,
-                                                                    icon: icon, 
-                                                                    sortable: sorting && column.sortable && css.sortable || "",
-                                                                    css: ((align === "right") 
-                                                                            ? css.right 
-                                                                            : (align === "center") 
-                                                                                ? css.center 
-                                                                                : css.left) + cssClass,
-                                                                    style: (column.width === null) 
-                                                                                ? "" 
-                                                                                : "width: " + column.width + ";"
-                                                                }));
+            html += template.headerCell.resolve(getParams.call(base, { column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "", css: ((align === "right") ? css.right : (align === "center") ? css.center : css.left) + cssClass, style: (column.width === null) ? "" : "width: " + column.width + ";" }));
         }
     });
 
@@ -939,15 +728,14 @@ function renderTableHeader(){
     if(sorting){
         var sortingSelector = getCssSelector(css.sortable);
 
-        $headerRow.off("click" + namespace, sortingSelector)
-                  .on("click" + namespace, sortingSelector, 
-                        function(e){
-                            e.preventDefault();
+        $headerRow.off("click" + namespace, sortingSelector).on("click" + namespace, sortingSelector, 
+                                                                    function(e){
+                                                                        e.preventDefault();
 
-                            setTableHeaderSortDirection.call(base, $(this));
-                            sortRows.call(base);
-                            loadData.call(base);
-                        });
+                                                                        setTableHeaderSortDirection.call(base, $(this));
+                                                                        sortRows.call(base);
+                                                                        loadData.call(base);
+                                                                    });
     }
 
     // TODO: Create a seperate function for this piece of code.
@@ -956,7 +744,7 @@ function renderTableHeader(){
         $headerRow.off("click" + namespace, selectBoxSelector)
                   .on("click" + namespace, selectBoxSelector, 
                   function(e){
-                    e.stopPropogation();
+                    e.stopPropagation();
 
                     if($(this).prop("checked")){
                         base.select();
@@ -1039,19 +827,16 @@ function showLoading(){
                 $thead = base.$element.children("thead").first(),
                 $tbody = base.$element.children("tbody").first(),
                 $firstCell = $tbody.find("tr > td").first(),
-                padding = (base.$element.height() = $thead.height()) - ($firstCell.height() + 20),
+                padding = (base.$element.height() - $thead.height()) - ($firstCell.height() + 20),
                 count = base.columns.where(isVisible).length;
 
             if(base.selection){
                 count += 1;
             }
 
-            $tbody.html(template.loading.resolve(getParams.call(base, 
-                                                                    {
-                                                                        columns: count
-                                                                    })));
+            $tbody.html(template.loading.resolve(getParams.call(base, {columns: count })));
 
-            if(base.rowCount !== -1 && padding > 0){
+            if(base.resultCount !== -1 && padding > 0){
                 $tbody.find("tr > td").css("padding", "20px 0" + padding + "px");
             }
         }
@@ -1078,13 +863,7 @@ function sortRows(){
             return (item.order === "asc") ? value : value * -1;
         }
 
-        return (x[item.id] > y[item.id]) 
-                    ? sortOrder(1) 
-                    : (x[item.id] < y[item.id]) 
-                        ? sortOrder(-1) 
-                        : (sortArray.length > next) 
-                            ? sort(x, y, next) 
-                            : 0;
+        return (x[item.id] > y[item.id]) ? sortOrder(1) : (x[item.id] < y[item.id]) ? sortOrder(-1) : (sortArray.length > next) ? sort(x, y, next) : 0;
     }
 
     if(!this.options.ajax){
@@ -1092,11 +871,7 @@ function sortRows(){
 
         for(var key in this.sortDictionary){
             if(this.options.multiSort || sortArray.length === 0){
-                sortArray.push(
-                    {
-                        id: key,
-                        order: this.sortDictionary[key]
-                    });
+                sortArray.push({ id: key, order: this.sortDictionary[key] });
             }
         }
 
@@ -1104,6 +879,163 @@ function sortRows(){
             this.rows.sort(sort);
         }
     }
+}
+
+/**
+ * Load data into table
+ * 
+ * @method loadData
+ * @since 1.0.0
+ */
+function loadData(){
+    var base = this;
+
+    this.$element._bgBusyAria(true).trigger("load" + namespace);
+    showLoading.call(this);
+
+    function containsPhrase(row){
+        var column,
+            searchPattern = new RegExp(base.searchPhrase, (base.options.caseSensitive) ? "g" : "gi");
+        
+        for(var i = 0; i < base.columns.length; i += 1){
+            column = base.columns[i];
+            if(column.searchable && column.visible && column.converter.to(row[column.id]).search(searchPattern) > -1){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function update(rows, total){
+        base.currentRows = rows;
+        setTotals.call(base, total);
+
+        if(!base.options.keepSelection){
+            base.selectedRows = [];
+        }
+
+        renderRows.call(base, rows);
+        renderInfos.call(base);
+        renderPagination.call(base);
+
+        base.$element._bgBusyAria(false).trigger("loaded" + namespace);
+    }
+
+    if(this.options.ajax){
+        var request = getRequest.call(this),
+            url = getUrl.call(this);
+
+        if(url === null || typeof url !== "string" || url.length === 0){
+            throw new Error("Url setting must be a non-empty string or a function that returns one.");
+        }
+
+        // *** Abort the previous AJAX request if not already finished or if failed.
+        if(this.xqr){
+            this.xqr.abort();
+        }
+
+        var settings = {
+            url: url,
+            data: request,
+            success: function(response){
+                base.xqr = null;
+
+                if(typeof (response) === "string"){
+                    response = $.parseJSON(response);
+                }
+
+                response = base.options.responseHandler(response);
+
+                base.current = response.current;
+                update(response.rows, response.totals);
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                base.xqr = null;
+
+                if(textStatus !== "abort"){
+                    renderNoResultsRow.call(base); // override loading mask
+                    base.element._bgBusyAria(false).trigger("loaded" + namespace);
+                }
+            }
+        };
+
+        settings = $.extend(this.options.ajaxSettings, settings);
+
+        this.xqr = $.ajax(settings);
+    }else{
+        var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
+            total = rows.length;
+        
+        if(this.resultCount !== -1){
+            rows = rows.page(this.current, this.resultCount);
+        }
+
+        // TODO: Improve this comment ?
+        // *** setTimeout decouples the initialization so that adding event handlers happens before initialization ***
+        window.setTimeout(function() {update(rows, total);}, 10);
+    }
+}
+
+/**
+ * Load rows when not using AJAX.
+ * 
+ * @method loadRows
+ * @since 1.0.0
+ */
+function loadRows(){
+    if(!this.options.ajax){
+        var base = this,
+            rows = this.$element.find("tbody > tr");
+
+        rows.each(function(){
+            var $this = $(this),
+                cells = $this.children("td"),
+                row = {};
+
+            $.each(base.columns, function(i, column){
+                row[column.id] = column.converter.from(cells.eq(i).text());
+            });
+
+            appendRow.call(base, row);
+        });
+
+        setTotals.call(this, this.rows.length);
+        sortRows.call(this);
+    }
+}
+
+/**
+ * Initialize the iotable.
+ * 
+ * @method init
+ * @since 1.0.0
+ */
+function init(){
+    this.$element.trigger("initialize" + namespace);
+
+    /**
+     * Loads columns from HTML `thead` tag.
+     */
+    loadColumns.call(this);
+
+    this.selection = this.options.selection && this.identifier !== null;
+
+    /**
+     * Loads rows from HTML `tbody` tag if ajax is false.
+     */
+    loadRows.call(this);
+
+    prepareTable.call(this);
+
+    renderTableHeader.call(this);
+
+    renderSearchField.call(this);
+
+    renderActions.call(this);
+
+    loadData.call(this);
+
+    this.$element.trigger("initialized" + namespace);
 }
 
 

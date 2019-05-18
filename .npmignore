@@ -1,0 +1,13 @@
+build
+demo
+dist/*.nupkg
+dist/*.zip
+docs
+lib
+*.nuspec
+test
+.gitattributes
+.gitignore
+.travis.yml
+iotable.jquery.json
+Gruntfile.js

@@ -13,7 +13,8 @@ $.fn.iotable = function(option){
 
     var args = Array.prototype.slice.call(arguments, 1),
         returnValue = null,
-        elements = this.each(function(index){
+        elements = this.each(function(index)
+        {
             var $this = $(this),
                 instance = $this.data(namespace),
                 options = typeof option === "object" && option;
@@ -36,7 +37,7 @@ $.fn.iotable = function(option){
             }
         });
     return (typeof option === "string" && option.indexOf("get") === 0) ? returnValue : elements;
-}
+};
 
 /**
  * Constructor
@@ -49,7 +50,7 @@ $.fn.iotable.Constructor = Grid;
 $.fn.iotable.noConflict = function(){
     $.fn.iotable = old;
     return this;
-}
+};
 
 /**
  * Grid data-api
